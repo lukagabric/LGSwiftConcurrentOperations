@@ -49,7 +49,23 @@ class LGConcurrentOperationTests: XCTestCase {
         operationQueue.addOperation(op6)
         
         operationQueue.suspended = false
+        operationQueue.waitUntilAllOperationsAreFinished()
+    }
+    
+    func testOperationSignal() {
+        let operationQueue = NSOperationQueue()
+        operationQueue.suspended = true
+        operationQueue.maxConcurrentOperationCount = 1
         
+        let op1 = LGSampleOperation(debugName: "op1")
+
+        op1.signal.observeCompleted {
+            print("Operation \"\(op1.debugName)\" completed")
+        }
+        
+        operationQueue.addOperation(op1)
+        
+        operationQueue.suspended = false
         operationQueue.waitUntilAllOperationsAreFinished()
     }
     
