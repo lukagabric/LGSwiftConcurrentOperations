@@ -19,7 +19,8 @@ public class LGSampleOperation: LGConcurrentOperation {
         self.debugName = debugName
         
         let (signal, observer) = Signal<String, NoError>.pipe()
-        self.signal = signal
+        self.signal = signal.takeLast(1)
+        
         self.observer = observer
         
         super.init()
@@ -27,11 +28,13 @@ public class LGSampleOperation: LGConcurrentOperation {
     
     public override func main() {
         print("did begin work for operation \(self.debugName)")
-        let seconds = Double(arc4random_uniform(2) + 2)
+        let seconds = Double(arc4random_uniform(1) + 1)
         let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(seconds * Double(NSEC_PER_SEC)))
-        dispatch_after(delayTime, dispatch_queue_create("com.test.lg", nil)) { [unowned self] in
-            print("did end work for operation \(self.debugName)")
-            self.completeOperation()
+        dispatch_after(delayTime, dispatch_queue_create("com.test.lg", nil)) { [weak self] in
+            guard let strongSelf = self else { return }
+            
+            print("did end work for operation \(strongSelf.debugName)")
+            strongSelf.completeOperation()
         }
     }
     
@@ -41,6 +44,7 @@ public class LGSampleOperation: LGConcurrentOperation {
     }
     
     override func completeOperation() {
+        self.observer.sendNext("Some string")
         self.observer.sendCompleted()
         super.completeOperation()
         print("did complete operation \(self.debugName)")

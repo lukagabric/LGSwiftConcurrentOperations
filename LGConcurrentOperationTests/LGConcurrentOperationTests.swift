@@ -59,8 +59,8 @@ class LGConcurrentOperationTests: XCTestCase {
         
         let op1 = LGSampleOperation(debugName: "op1")
 
-        op1.signal.observeCompleted {
-            print("Operation \"\(op1.debugName)\" completed")
+        op1.signal.observeNext { string in
+            print("Operation \"\(op1.debugName)\" completed with value: \(string)")
         }
         
         operationQueue.addOperation(op1)
